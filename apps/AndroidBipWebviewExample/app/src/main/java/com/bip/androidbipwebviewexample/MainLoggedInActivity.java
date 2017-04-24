@@ -1,4 +1,4 @@
-package com.bip.androidbipnativeexample;
+package com.bip.androidbipwebviewexample;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -23,11 +23,7 @@ import com.bip.androidopenidclient.response.OAuth2Response;
 public class MainLoggedInActivity extends AppCompatActivity {
     private static final String TAG = "MainLoggedInActivity";
 
-    private UserLogoutTask mLogoutTask = null;
     private UserRefreshTokenTask mRefreshTask = null;
-
-    private View mProgressView;
-    private View mLoggedInView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,9 +59,6 @@ public class MainLoggedInActivity extends AppCompatActivity {
                 user_info();
             }
         });
-
-        mLoggedInView = findViewById(R.id.logged_in_view);
-        mProgressView = findViewById(R.id.logout_progress);
     }
 
     private void refresh_token() {
@@ -73,7 +66,6 @@ public class MainLoggedInActivity extends AppCompatActivity {
             return;
         }
 
-        showProgress(true);
         mRefreshTask = new UserRefreshTokenTask();
         mRefreshTask.execute((Void) null);
     }
@@ -84,49 +76,9 @@ public class MainLoggedInActivity extends AppCompatActivity {
     }
 
     private void logout() {
-        if (mLogoutTask != null) {
-            return;
-        }
-
-        showProgress(true);
-        mLogoutTask = new UserLogoutTask();
-        mLogoutTask.execute((Void) null);
-    }
-
-    /**
-     * Shows the progress UI and hides the login form.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    private void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-            mLoggedInView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoggedInView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mLoggedInView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
-
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mProgressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mLoggedInView.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
+        Intent intent = new Intent(this, WebviewActivity.class);
+        intent.putExtra("LOADING_URL", "logoutUrl");
+        startActivity(intent);
     }
 
     public class UserRefreshTokenTask extends AsyncTask<Void, Void, Boolean> {
@@ -144,7 +96,7 @@ public class MainLoggedInActivity extends AppCompatActivity {
             OAuth2Response response = null;
             try {
                 OpenIdClient openIdClient = (OpenIdClient) getApplication();
-                response = openIdClient.getOpenIdClient().refreshPublicAccessToken(refreshToken, null);
+                response = openIdClient.getOpenIdClient().refreshAccessToken(refreshToken, null, openIdClient.getClientId());
 
                 if(response.httpResponseCode == 200) {
                     SharedPreferences.Editor editor = preferences.edit();
@@ -166,7 +118,6 @@ public class MainLoggedInActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(final Boolean success) {
             mRefreshTask = null;
-            showProgress(false);
 
             Toast toast = null;
 
@@ -177,48 +128,6 @@ public class MainLoggedInActivity extends AppCompatActivity {
             }
             toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
             toast.show();
-        }
-    }
-
-    public class UserLogoutTask extends AsyncTask<Void, Void, Boolean> {
-        UserLogoutTask() {
-
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            Log.d(TAG, "Trying to logout...");
-
-            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainLoggedInActivity.this);
-            String accessToken = preferences.getString("access_token", "");
-
-            try {
-                OpenIdClient openIdClient = (OpenIdClient) getApplication();
-                openIdClient.getOpenIdClient().revokeAccessToken(accessToken);
-
-                SharedPreferences.Editor editor = preferences.edit();
-                editor.remove("access_token");
-                editor.remove("refresh_token");
-                editor.remove("name");
-                editor.apply();
-            } catch (Exception e){
-                Log.d(TAG, "Internal Error !");
-                e.printStackTrace();
-                return false;
-            }
-
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mLogoutTask = null;
-            showProgress(false);
-
-            if (success) {
-                Intent intent = new Intent(MainLoggedInActivity.this, MainActivity.class);
-                startActivity(intent);
-            }
         }
     }
 }

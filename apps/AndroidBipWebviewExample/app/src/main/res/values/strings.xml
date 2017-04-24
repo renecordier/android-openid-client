@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Android Bip Webview Example</string>
+    <string name="header_bip_logout">Welcome to BIP !</string>
+    <string name="text_logout">You are not logged in...</string>
+    <string name="button_login">Login</string>
+    <string name="text_login">You are logged in ! Thank you for using our services.</string>
+    <string name="button_refresh">Refresh token</string>
+    <string name="button_info">User info</string>
+    <string name="button_logout">Logout</string>
+
+    <!-- Strings related to uer info -->
+    <string name="header_info">User information</string>
+    <string name="bip_id_info">BIP Id :</string>
+    <string name="email_info">Email :</string>
+    <string name="email_verified_info">Email verified :</string>
+    <string name="name_info">Name :</string>
+    <string name="button_return_main">Return to main screen</string>
+</resources>

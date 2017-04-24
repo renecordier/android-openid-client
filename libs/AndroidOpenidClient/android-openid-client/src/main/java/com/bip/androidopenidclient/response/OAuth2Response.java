@@ -23,7 +23,9 @@ public class OAuth2Response {
     @SerializedName("id_token")
     public String idToken;
     public String scope;
+    @SerializedName("@httpResponseCode")
     public Integer httpResponseCode;
+    @SerializedName("@requestId")
     public String requestId;
     public String code;
     public String state;
@@ -32,6 +34,7 @@ public class OAuth2Response {
     public String error;
     @SerializedName("error_uri")
     public String errorUri;
+    @SerializedName("@errorCode")
     public ApiErrorCode errorCode;
     public String errorMsg;
 }

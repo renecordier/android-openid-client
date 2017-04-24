@@ -181,29 +181,31 @@ public class LoginActivity extends AppCompatActivity {
                         mPassword,
                         longLivedToken);
 
-                Log.d(TAG, "Success !");
-                Log.d(TAG, "Access token : " + response.accessToken);
-                Log.d(TAG, "Token type : " + response.tokenType);
-                Log.d(TAG, "Expires in : " + response.expiresIn);
-                Log.d(TAG, "Refresh token : " + response.refreshToken);
-                Log.d(TAG, "Scope : " + response.scope);
+                if(response.httpResponseCode == 200) {
+                    Log.d(TAG, "Success !");
+                    Log.d(TAG, "Access token : " + response.accessToken);
+                    Log.d(TAG, "Token type : " + response.tokenType);
+                    Log.d(TAG, "Expires in : " + response.expiresIn);
+                    Log.d(TAG, "Refresh token : " + response.refreshToken);
+                    Log.d(TAG, "Scope : " + response.scope);
 
-                ClaimsSet claimsSet = openIdClient.getOpenIdClient().verifyIdToken(response.idToken, openIdClient.getClientId());
-                String firstName = claimsSet.getClaim("given_name").toString();
-                String lastName = claimsSet.getClaim("family_name").toString();
-                Log.d(TAG,"ID token : {firstName:" + firstName + ",lastName:" + lastName + "}");
+                    ClaimsSet claimsSet = openIdClient.getOpenIdClient().verifyIdToken(response.idToken, openIdClient.getClientId());
+                    String firstName = claimsSet.getClaim("given_name").toString();
+                    String lastName = claimsSet.getClaim("family_name").toString();
+                    Log.d(TAG, "ID token : {firstName:" + firstName + ",lastName:" + lastName + "}");
 
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
-                SharedPreferences.Editor editor = preferences.edit();
-                editor.putString("access_token",response.accessToken);
-                editor.putString("refresh_token",response.refreshToken);
-                editor.putString("name",firstName + " " + lastName);
-                editor.apply();
-
-            } catch(BonnierOpenIdException e) {
-                Log.e(TAG, "Error Bonnier OpenId exception : " + e.getMessage());
-                throw new BonnierOpenIdException(e.getMessage());
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
+                    SharedPreferences.Editor editor = preferences.edit();
+                    editor.putString("access_token", response.accessToken);
+                    editor.putString("refresh_token", response.refreshToken);
+                    editor.putString("name", firstName + " " + lastName);
+                    editor.apply();
+                } else {
+                    Log.d(TAG, "Error " + response.httpResponseCode + " : " + response.errorMsg);
+                    return false;
+                }
             } catch(Exception e) {
+                Log.d(TAG, "Internal Error !");
                 e.printStackTrace();
             }
 
